@@ -74,8 +74,7 @@ def Store_Debug(lines, filename):
 		except IOError as e:
 			logging.error(e)
 	try:
-#		f = open(DEBUG_FOLDER + '/' + filename, 'a')
-		f = open(filename, 'a')
+		f = open(DEBUG_FOLDER + '/' + filename, 'a')
 		for line in lines:
 			f.write(line.encode("utf-8"))
 		f.close()
