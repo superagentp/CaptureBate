@@ -212,7 +212,7 @@ class Model:
 #				print 'Started ' + flv + ' with pid ' + str(self._pid)
 				
 	def _stop_recording(self):
-		logging.info('Stopping recording: ' + self._id+ 'with pid ' + str(self._pid))
+		logging.info('Stopping recording: ' + self._id+ ' with pid ' + str(self._pid))
 		# Terminating self._pid + 1, since that is the actual rtmp process spawned by the recording script
 #		result = os.kill(self._pid + 1, signal.SIGKILL) # signal.SIGTERM
 		os.kill(self._pid + 1, signal.SIGTERM) # or signal.SIGKILL
