@@ -16,6 +16,7 @@ class Model:
 		self._client = None
 		self._script_process = None
 		self._pid = -1			# Recording script pid, note that the actual rtmp pid will be self._pid + 1
+		self._flv = None
 		
 	def get_id(self):
 		return self._id
@@ -151,7 +152,7 @@ class Model:
 				flinks.write('#!/bin/sh\n')
 				ts = time.time()
 				st = datetime.datetime.fromtimestamp(ts).strftime('%Y.%m.%d_%H.%M')
-				flv = VIDEO_FOLDER + '/' + self._id + '_' + st + '_chaturbate.flv'
+				self._flv = VIDEO_FOLDER + '/' + self._id + '_' + st + '_chaturbate.flv'
 				form_dict = {
 					"rtmp_bin" : RTMPDUMP,
 					"stream_server": stream_server,
@@ -161,7 +162,7 @@ class Model:
 					"pw_hash": pw,
 					"video_folder": VIDEO_FOLDER,
 					"date_string": st,
-					"flv": flv,
+					"flv": self._flv,
 				}
 				flinks.write('%(rtmp_bin)s --quiet --live --rtmp "rtmp://%(stream_server)s/live-edge" --pageUrl "http://chaturbate.com/%(model_name)s" --conn S:%(username)s --conn S:%(model_name)s --conn S:%(flash_ver)s --conn S:%(pw_hash)s --token "m9z#$dO0qe34Rxe@sMYxx" --playpath "playpath" --flv "%(flv)s"' % form_dict)
 				flinks.write('\n')
@@ -216,6 +217,11 @@ class Model:
 #		result = os.kill(self._pid + 1, signal.SIGKILL) # signal.SIGTERM
 		os.kill(self._pid + 1, signal.SIGTERM) # or signal.SIGKILL
 		self._script_process.communicate()
+
+		# Make the recording read- and writeable to the world
+		os.chmod(self._flv, 0666)
+		
+		self._flv = None
 		self._script_process = None
 		self._pid = -1
 #		os.kill(self._pid, signal.SIGTERM) # or signal.SIGKILL
