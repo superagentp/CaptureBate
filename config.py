@@ -2,6 +2,7 @@
 Config functions such as read settings from file, logging, etc.
 '''
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import shutil
 import os, sys
 from ConfigParser import SafeConfigParser
@@ -30,11 +31,22 @@ def Credentials_file(section, option):
 	return value
 
 def Logging():
+
 	if DEBUGGING == True:
 		Logging_level = logging.DEBUG
 	else:
 		Logging_level = logging.INFO
-	logging.basicConfig(filename=LOG_FILE,level=Logging_level, format='%(asctime)s %(levelname)s:%(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+		# set logging level of requests  to warning (so higher than info), to prevent cluttering our output file
+		logging.getLogger('requests').setLevel(logging.WARNING)
+		logging.getLogger('urllib3').setLevel(logging.WARNING)
+		
+	logHandler = TimedRotatingFileHandler(LOG_FILE, when="midnight")
+	logFormatter = logging.Formatter('%(asctime)s %(levelname)s:%(message)s')
+	logHandler.setFormatter(logFormatter)
+#	logging.basicConfig(filename=LOG_FILE,level=Logging_level, format='%(asctime)s %(levelname)s:%(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+	logger = logging.getLogger()
+	logger.addHandler(logHandler)
+	logger.setLevel(Logging_level)
 	logging.info('Starting application: version %s' %VERSION)
 
 def Remove_folder(folder):
