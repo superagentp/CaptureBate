@@ -11,7 +11,7 @@ def Connection():
 	count = 0
 	while True:
 		try:
-			logging.info('Connecting to ' + URL)
+#			logging.info('Connecting to ' + URL)
 			client = requests.session()
 			client.mount('https://', MyAdapter())
 			# Retrieve the CSRF token first
@@ -38,8 +38,8 @@ def Connection():
 		logging.error(e)		
 	#logging.debug('Page Source for ' + URL + '\n' + r.text)
 	page_source = 'Page Source for ' + URL + '\n' + r.text
-	# if Debugging is enabled Page source goes to debug.log file
-	if Debugging == True:
+	# if DEBUGGING is enabled Page source goes to debug.log file
+	if DEBUGGING == True:
 		Store_Debug(page_source, "connection.log")
 	return client		
 
