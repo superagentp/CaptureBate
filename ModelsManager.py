@@ -34,7 +34,7 @@ class ModelsManager:
 			for old_wanted in self._wanted:
 				if not old_wanted in new_wanted_list:
 					# User removed a model id from the wanted list
-					logging.info("removing " + old_wanted)
+					logging.debug('[ModelsManager.update_wanted] Removing ' + old_wanted)
 					self._wanted.remove(old_wanted)
 					model = self.get_model(old_wanted)
 					model.destroy()
@@ -42,11 +42,10 @@ class ModelsManager:
 			for new_wanted in new_wanted_list:
 				if not new_wanted in self._wanted:
 					# User added a model id to the wanted list
-					logging.info("adding " + new_wanted)
+					logging.debug('[ModelsManager.update_wanted] Adding ' + new_wanted)
 					self._wanted.append(new_wanted)
 					model = Model(new_wanted)
 					model.init()
-#					model.update()
 					self._models.append(model)
 		except IOError, e:
 			logging.info("Error: %s file does not appear to exist." % WANTED_FILE)
@@ -63,22 +62,23 @@ class ModelsManager:
 	def update(self):
 		self.update_wanted()
 		self.update_models()
-#		self.output_debug()
+		if DEBUGGING:
+			self.output_debug()
 		
 	def output_debug(self):
-		data = "[DEBUG]_wanted:"
+		data = "[ModelsManager.output_debug]_wanted:"
 		for model_id in self._wanted:
 			data = data + " " + model_id
-		logging.info(data)
+		logging.debug(data)
 		
-		data = "[DEBUG]_online:"
+		data = "[ModelsManager.output_debug]_online:"
 		for model_id in self._online:
 			data = data + " " + model_id
-		logging.info(data)
+		logging.debug(data)
 		
-		data = "[DEBUG]_recording:"
-		for model_id in self._recording:
-			data = data + " " + model_id
-		logging.info(data)
-		
+		data = "[ModelsManager.output_debug]_recording:"
+		for model in self._models:
+			if model.is_recording():
+				data = data + " " + model.get_id()
+		logging.debug(data)
 	
