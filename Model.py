@@ -81,7 +81,7 @@ class Model:
 	def is_private(self):
 		if self._online:
 			try:
-#				logging.info("Redirecting to " + URL_SPY_SHOWS)
+#				logging.debug("[Model.is_private] Redirecting to " + URL_SPY_SHOWS)
 				response = self._client.get(URL_SPY_SHOWS)
 			except Exception, e:
 				logging.error('Some error during connecting to '+URL_SPY_SHOWS)
@@ -117,16 +117,16 @@ class Model:
 				 
 		status_update = self._id + " online:" + str(self._online) + "->" + str(new_online) + " | private:" + str(self._private) + "->" + str(new_private)
 		
-		logging.info('[Model.update] ' + status_update)
+		logging.debug('[Model.update] ' + status_update)
 		
 		if (self._online == True) and (self._private == False):
 			# model was not in a private room and online
 			if new_online == False:
-				logging.debug('[Model.update] ' +  self._id + ' went offline while public, so stopping recording')
+				logging.info('[Model.update] ' +  self._id + ' went offline while public, so stopping recording')
 				self._stop_recording()
 			elif new_private == True:
 				# model went into a private room, so stop recording
-				logging.debug('[Model.update] ' +  self._id + ' went private, so stopping recording')
+				logging.info('[Model.update] ' +  self._id + ' went private, so stopping recording')
 				self._stop_recording()
 			self._update_status(new_online, new_private)
 			return
@@ -134,7 +134,7 @@ class Model:
 		if (new_private == False) and (new_online == True):
 			# new status is public and online
 			if not ((self._private == False) and (self._online == True)):
-				logging.debug('[Model.update] ' +  self._id + ' went online or public, so starting recording')
+				logging.info('[Model.update] ' +  self._id + ' went online or public, so starting recording')
 				self._start_recording()
 
 		self._update_status(new_online, new_private)
