@@ -238,7 +238,12 @@ class Model:
 		logging.info('[Mode._stop_recording] Stopping recording: ' + self._id+ ' with pid ' + str(self._pid))
 		# Terminating self._pid + 1, since that is the actual rtmp process spawned by the recording script
 #		result = os.kill(self._pid + 1, signal.SIGKILL) # signal.SIGTERM
-		os.kill(self._pid + 1, signal.SIGTERM) # or signal.SIGKILL
+		try: 
+			os.kill(self._pid + 1, signal.SIGTERM) # or signal.SIGKILL
+		except Exception, e:
+			logging.error('[Model._stop_recording] kill ' + str(self._pid + 1) + ' failed')
+			logging.error(e)
+		
 		self._script_process.communicate()
 		
 		logging.debug('[Model._stop_recording] Making recording ' + self._flv + ' world read- and writeable')
