@@ -115,7 +115,7 @@ class Model:
 		new_online = self.is_online()
 		new_private = self.is_private()
 				 
-		status_update = "update status: " + self._id + " online:" + str(self._online) + "->" + str(new_online) + " | private:" + str(self._private) + "->" + str(new_private)
+		status_update = self._id + " online:" + str(self._online) + "->" + str(new_online) + " | private:" + str(self._private) + "->" + str(new_private)
 		
 		logging.info('[Model.update] ' + status_update)
 		
