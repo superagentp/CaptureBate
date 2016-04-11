@@ -102,6 +102,16 @@ class Model:
 		else:
 #			print self._id + " not online, so not on private page"
 			return False
+			
+	def _is_still_recording(self):
+		try: 
+			# Check if rtmpdump pid is still active (sending kill -s 0)
+			os.kill(self._pid + 1, 0) 
+			return True
+		except Exception, e:
+			logging.error('[Model._is_still_recording] pid ' + str(self._pid + 1) + ' not active, so rtmpdump must have died unplanned')
+			logging.error(e)
+			return False
 
 	def _update_status(self, new_online, new_private):
 		self._online = new_online
@@ -119,23 +129,31 @@ class Model:
 		
 		logging.debug('[Model.update] ' + status_update)
 		
-		if (self._online == True) and (self._private == False):
+		if self._online and (not self._private):
 			# model was not in a private room and online
-			if new_online == False:
+			if (not new_online):
 				logging.info('[Model.update] ' +  self._id + ' went offline while public, so stopping recording')
 				self._stop_recording()
-			elif new_private == True:
+			elif new_private:
 				# model went into a private room, so stop recording
 				logging.info('[Model.update] ' +  self._id + ' went private, so stopping recording')
 				self._stop_recording()
 			self._update_status(new_online, new_private)
 			return
 			
-		if (new_private == False) and (new_online == True):
+		if (not new_private) and new_online:
 			# new status is public and online
-			if not ((self._private == False) and (self._online == True)):
+			if not ((not self._private) and self._online):
 				logging.info('[Model.update] ' +  self._id + ' went online or public, so starting recording')
 				self._start_recording()
+				
+		if new_online and self._online:
+			if (not new_private) and (not self._private):
+				# Should still be recording
+				if not self._is_still_recording():
+					# Recording died, so clean up recording script and restart recording
+					self._stop_recording()
+					self._start_recording()
 
 		self._update_status(new_online, new_private)
 				
