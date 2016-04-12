@@ -34,6 +34,7 @@ class Model:
 		status_string = status_string + self._id + "\tonline:" + str(self._online) + " | private:" + str(self._private) + " at start -> model initialized"
 		
 		if self._online and not self._private:
+			status_string = 'R+' + status_string
 			logging.info(status_string + " and starting recording")
 			self._start_recording()
 		else:
