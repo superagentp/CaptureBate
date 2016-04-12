@@ -133,11 +133,11 @@ class Model:
 		if self._online and (not self._private):
 			# model was not in a private room and online
 			if (not new_online):
-				logging.info('\t' + self._id + '\twent offline while public, so stopping recording')
+				logging.info('R-\t' + self._id + '\twent offline while public, so stopping recording')
 				self._stop_recording()
 			elif new_private:
 				# model went into a private room, so stop recording
-				logging.info('\t' + self._id + '\twent private, so stopping recording')
+				logging.info('R-\t' + self._id + '\twent private, so stopping recording')
 				self._stop_recording()
 			self._update_status(new_online, new_private)
 			return
@@ -145,7 +145,7 @@ class Model:
 		if (not new_private) and new_online:
 			# new status is public and online
 			if not ((not self._private) and self._online):
-				logging.info('\t' + self._id + ' went online or public, so starting recording')
+				logging.info('R+\t' + self._id + ' went online or public, so starting recording')
 				self._start_recording()
 				
 		if new_online and self._online:
@@ -153,7 +153,7 @@ class Model:
 				# Should still be recording
 				if not self._is_still_recording():
 					# Recording died, so clean up recording script and restart recording
-					logging.info('\t' + self._id + '\twent recording died, so restarting recording')
+					logging.info('R+\t' + self._id + '\twent recording died, so restarting recording')
 					self._stop_recording()
 					self._start_recording()
 
