@@ -154,7 +154,7 @@ class Model:
 #				# Should still be recording
 #				if not self._is_still_recording():
 #					# Recording died, so clean up recording script and restart recording
-#					logging.info('R+\t' + self._id + '\twent recording died, so restarting recording')
+#					logging.info('R+\t' + self._id + '\trecording died, so restarting recording')
 #					self._stop_recording()
 #					self._start_recording()
 
