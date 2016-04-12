@@ -28,10 +28,10 @@ class Model:
 			logging.debug('[Model.init] ' + self._id + ' does not exist on site')
 			return
 
-		status_string = ''
+		status_string = '\t'
 		if DEBUGGING:
-			status_string = '[Model.init] '
-		status_string = status_string + self._id + " online:" + str(self._online) + " | private:" + str(self._private) + " at start -> model initialized"
+			status_string = '[Model.init]\t'
+		status_string = status_string + self._id + "\tonline:" + str(self._online) + " | private:" + str(self._private) + " at start -> model initialized"
 		
 		if self._online and not self._private:
 			logging.info(status_string + " and starting recording")

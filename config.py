@@ -47,7 +47,7 @@ def Logging():
 	logger = logging.getLogger()
 	logger.addHandler(logHandler)
 	logger.setLevel(Logging_level)
-	logging.info('Starting application: version %s' %VERSION)
+	logging.info('*** Starting application: version %s ***' %VERSION)
 
 def Remove_folder(folder):
     if (os.path.exists(folder) == True):

@@ -37,7 +37,7 @@ class ModelsManager:
 					logging.debug('[ModelsManager.update_wanted] Removing ' + old_wanted)
 					self._wanted.remove(old_wanted)
 					model = self.get_model(old_wanted)
-					logging.info('\t' + model.get_id() + '\tremoved from wanted file, so removing model')
+					logging.info('\t' + model.get_id() + '\t\tremoved from wanted file, so removing model')
 					model.destroy()
 					self._models.remove(model)
 			for new_wanted in new_wanted_list:
@@ -46,7 +46,7 @@ class ModelsManager:
 					logging.debug('[ModelsManager.update_wanted] Adding ' + new_wanted)
 					self._wanted.append(new_wanted)
 					model = Model(new_wanted)
-					logging.info('\t' + new_wanted + '\tadded to wanted file, so adding model')
+					logging.info('\t' + new_wanted + '\t\tfound in wanted file, so adding model')
 					model.init()
 					self._models.append(model)
 		except IOError, e:
