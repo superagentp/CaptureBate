@@ -37,6 +37,7 @@ class ModelsManager:
 					logging.debug('[ModelsManager.update_wanted] Removing ' + old_wanted)
 					self._wanted.remove(old_wanted)
 					model = self.get_model(old_wanted)
+					logging.info('\t' + model.get_id() + '\tremoved from wanted file, so removing model')
 					model.destroy()
 					self._models.remove(model)
 			for new_wanted in new_wanted_list:
@@ -45,6 +46,7 @@ class ModelsManager:
 					logging.debug('[ModelsManager.update_wanted] Adding ' + new_wanted)
 					self._wanted.append(new_wanted)
 					model = Model(new_wanted)
+					logging.info('\t' + new_wanted + '\tadded to wanted file, so adding model')
 					model.init()
 					self._models.append(model)
 		except IOError, e:
@@ -62,19 +64,19 @@ class ModelsManager:
 	def update(self):
 		self.update_wanted()
 		self.update_models()
-		if DEBUGGING:
-			self.output_debug()
+#		if DEBUGGING:
+#			self.output_debug()
 		
 	def output_debug(self):
-		data = "[ModelsManager.output_debug]_wanted:"
+		data = "[ModelsManager.output_debug] wanted:"
 		for model_id in self._wanted:
 			data = data + " " + model_id
 		logging.debug(data)
 		
-		data = "[ModelsManager.output_debug]_online:"
-		for model_id in self._online:
-			data = data + " " + model_id
-		logging.debug(data)
+#		data = "[ModelsManager.output_debug]_online:"
+#		for model_id in self._online:
+#			data = data + " " + model_id
+#		logging.debug(data)
 		
 		data = "[ModelsManager.output_debug]_recording:"
 		for model in self._models:

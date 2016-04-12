@@ -25,12 +25,14 @@ class Model:
 		self._private = self.is_private()
 		
 		if self._error:
-			logging.error('[Model.init] ' + self._id + ' does not exist on site')
+			logging.debug('[Model.init] ' + self._id + ' does not exist on site')
 			return
 
-		status_string = "[Model.init] " + self._id + " online:" + str(self._online) + " | private:" + str(self._private) + " -> model initialized"
+		if DEBUGGING:
+			status_string = '[Model.init] '
+		status_string = status_string + self._id + " online:" + str(self._online) + " | private:" + str(self._private) + " at start -> model initialized"
 		
-		if self._online == True and self._private == False:
+		if self._online and not self._private:
 			logging.info(status_string + " and starting recording")
 			self._start_recording()
 		else:
@@ -53,7 +55,7 @@ class Model:
 				logging.debug("[Model.is_online] Redirecting to " + model_url)
 			response = self._client.get(model_url)
 		except Exception, e:
-			logging.error('Some error during connecting to ' + URL)
+			logging.debug('Some error during connecting to ' + URL)
 			logging.error(e)
 		soup = BeautifulSoup(response.text)
 		if DEBUGGING:
@@ -81,26 +83,24 @@ class Model:
 	def is_private(self):
 		if self._online:
 			try:
-#				logging.debug("[Model.is_private] Redirecting to " + URL_SPY_SHOWS)
+				logging.debug("[Model.is_private] Redirecting to " + URL_SPY_SHOWS)
 				response = self._client.get(URL_SPY_SHOWS)
+				if DEBUGGING:
+					Store_Debug('Page Source for ' + URL_SPY_SHOWS + '\n' + response.text, "url_spy_shows.source.log")
+				soup = BeautifulSoup(response.text)
 			except Exception, e:
-				logging.error('Some error during connecting to '+URL_SPY_SHOWS)
+				logging.error('Some error during connecting to '+ URL_SPY_SHOWS)
 				logging.error(e)
-			soup = BeautifulSoup(response.text)
-			#logging.debug('Page Source for ' + URL_SPY_SHOWS + '\n' + response.text)
-			page_source = 'Page Source for ' + URL_SPY_SHOWS + '\n' + response.text
-			if DEBUGGING == True:
-				Store_Debug(soup.prettify(), "url_spy_shows.log")
 			
 			select_model_id_on_spy_shows = soup.select('a[href*="' + self._id + '"]')
 			if select_model_id_on_spy_shows == []:
-#				print self._id + " online, and not found on private page"
+				logging.debug('[Model.is_private] ' + self._id + ' is online and not private')
 				return False
 			else:
-#				print self._id + " online, but found on private page"
+				logging.debug('[Model.is_private] ' + self._id + ' is online and private')
 				return True
 		else:
-#			print self._id + " not online, so not on private page"
+			logging.debug('[Model.is_private] ' + self._id + ' is not online')
 			return False
 			
 	def _is_still_recording(self):
@@ -109,8 +109,8 @@ class Model:
 			os.kill(self._pid + 1, 0) 
 			return True
 		except Exception, e:
-			logging.error('[Model._is_still_recording] pid ' + str(self._pid + 1) + ' not active, so rtmpdump must have died unplanned')
-			logging.error(e)
+			logging.debug('[Model._is_still_recording] pid ' + str(self._pid + 1) + ' not active, so rtmpdump must have died unplanned')
+			logging.debug(e)
 			return False
 
 	def _update_status(self, new_online, new_private):
@@ -125,18 +125,18 @@ class Model:
 		new_online = self.is_online()
 		new_private = self.is_private()
 				 
-		status_update = self._id + " online:" + str(self._online) + "->" + str(new_online) + " | private:" + str(self._private) + "->" + str(new_private)
+		status_update = '\t' + self._id + " online:" + str(self._online) + "->" + str(new_online) + " | private:" + str(self._private) + "->" + str(new_private)
 		
-		logging.debug('[Model.update] ' + status_update)
+		logging.debug('[Model.update]' + status_update)
 		
 		if self._online and (not self._private):
 			# model was not in a private room and online
 			if (not new_online):
-				logging.info('[Model.update] ' +  self._id + ' went offline while public, so stopping recording')
+				logging.info('\t' + self._id + '\twent offline while public, so stopping recording')
 				self._stop_recording()
 			elif new_private:
 				# model went into a private room, so stop recording
-				logging.info('[Model.update] ' +  self._id + ' went private, so stopping recording')
+				logging.info('\t' + self._id + '\twent private, so stopping recording')
 				self._stop_recording()
 			self._update_status(new_online, new_private)
 			return
@@ -144,7 +144,7 @@ class Model:
 		if (not new_private) and new_online:
 			# new status is public and online
 			if not ((not self._private) and self._online):
-				logging.info('[Model.update] ' +  self._id + ' went online or public, so starting recording')
+				logging.info('\t' + self._id + ' went online or public, so starting recording')
 				self._start_recording()
 				
 		if new_online and self._online:
@@ -152,13 +152,14 @@ class Model:
 				# Should still be recording
 				if not self._is_still_recording():
 					# Recording died, so clean up recording script and restart recording
+					logging.info('\t' + self._id + '\twent recording died, so restarting recording')
 					self._stop_recording()
 					self._start_recording()
 
 		self._update_status(new_online, new_private)
 				
 	def _start_recording(self):
-		logging.info('[Model._start_recording] Starting recording for ' + self._id)
+		logging.debug('[Model._start_recording] Starting recording for ' + self._id)
 		model_url = "https://chaturbate.com/" + self._id + "/"
 		r3 = self._client.get(model_url)
 		soup = BeautifulSoup(r3.text)
@@ -216,7 +217,7 @@ class Model:
 #				print script
 				self._script_process = subprocess.Popen(script_name)
 				self._pid = self._script_process.pid
-				logging.info('[Model._start_recording] Recording for ' + self._id + ' started with pid: ' + str(self._pid))
+				logging.debug('[Model._start_recording] Recording for ' + self._id + ' started with pid: ' + str(self._pid))
 #				self._pid = subprocess.Popen(script_name).pid
 #				flash_version = "2.645"
 #				date_string = st				
@@ -253,14 +254,14 @@ class Model:
 #				print 'Started ' + flv + ' with pid ' + str(self._pid)
 				
 	def _stop_recording(self):
-		logging.info('[Mode._stop_recording] Stopping recording: ' + self._id+ ' with pid ' + str(self._pid))
+		logging.debug('[Mode._stop_recording] Stopping recording: ' + self._id+ ' with pid ' + str(self._pid))
 		# Terminating self._pid + 1, since that is the actual rtmp process spawned by the recording script
 #		result = os.kill(self._pid + 1, signal.SIGKILL) # signal.SIGTERM
 		try: 
 			os.kill(self._pid + 1, signal.SIGTERM) # or signal.SIGKILL
 		except Exception, e:
-			logging.error('[Model._stop_recording] kill ' + str(self._pid + 1) + ' failed')
-			logging.error(e)
+			logging.debug('[Model._stop_recording] kill ' + str(self._pid + 1) + ' failed')
+			logging.debug(e)
 		
 		self._script_process.communicate()
 		
@@ -272,7 +273,7 @@ class Model:
 		self._script_process = None
 		self._pid = -1
 #		os.kill(self._pid, signal.SIGTERM) # or signal.SIGKILL
-		logging.debug('[Mode._stop_recording] Stopped recording: ' + self._id+ ' with pid ' + str(self._pid))
+		logging.debug('[Model._stop_recording] Stopped recording: ' + self._id+ ' with pid ' + str(self._pid))
 		
 	def destroy(self):
 		logging.debug('[Model.destroy] Starting cleanup of ' + self._id)
