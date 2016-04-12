@@ -32,7 +32,7 @@ def Credentials_file(section, option):
 
 def Logging():
 
-	if DEBUGGING == True:
+	if DEBUGGING:
 		Logging_level = logging.DEBUG
 	else:
 		Logging_level = logging.INFO
@@ -41,7 +41,7 @@ def Logging():
 		logging.getLogger('urllib3').setLevel(logging.WARNING)
 		
 	logHandler = TimedRotatingFileHandler(LOG_FILE, when="midnight")
-	logFormatter = logging.Formatter('%(asctime)s %(levelname)s:%(message)s')
+	logFormatter = logging.Formatter('%(asctime)s %(levelname)s:%(message)s', "%Y-%m-%d %H:%M:%S")
 	logHandler.setFormatter(logFormatter)
 #	logging.basicConfig(filename=LOG_FILE,level=Logging_level, format='%(asctime)s %(levelname)s:%(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
 	logger = logging.getLogger()
