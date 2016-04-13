@@ -28,18 +28,30 @@ class Model:
 			logging.debug('[Model.init] ' + self._id + ' does not exist on site')
 			return
 
-		status_string = '\t'
+		status_string = ''
 		if DEBUGGING:
 			status_string = '[Model.init]\t'
-		status_string = status_string + self._id + "\tonline:" + str(self._online) + " | private:" + str(self._private) + " -> model initialized"
+		status_string = status_string + "online:" + str(self._online) + " | private:" + str(self._private) + " -> model initialized"
 		
 		if self._online and not self._private:
-			status_string = 'R+' + status_string
-			logging.info(status_string + " and starting recording")
+			self.write_log(status_string + " and starting recording", REC_START)
 			self._start_recording()
 		else:
-			logging.info(status_string)
-							
+			self.write_log(status_string)
+			
+	def write_log(self, message, status = '  '):
+		model_string = self._id
+		id_length = len(model_string)
+
+		if id_length < 8:
+			model_string = model_string + '\t\t'
+		elif id_length < 16:
+			model_string = model_string + '\t'
+		else:
+			model_string = model_string + ' '
+
+		logging.info(status + ' ' + model_string + message)
+	
 	def get_id(self):
 		return self._id
 		
@@ -74,12 +86,10 @@ class Model:
 		offline_div = soup.find('div', class_="offline_tipping")
 		if offline_div == None:
 			# bs4 couldn't find the offline_tipping div, so model is online
-			if DEBUGGING:
-				logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
+			logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
 			return True
 		else:
-			if DEBUGGING:
-				logging.debug("[Model.is_online] " + self._id + ": offline_div found, so model is offline")
+			logging.debug("[Model.is_online] " + self._id + ": offline_div found, so model is offline")
 			return False
 	
 	def is_private(self):
@@ -127,7 +137,7 @@ class Model:
 		new_online = self.is_online()
 		new_private = self.is_private()
 				 
-		status_update = '\t' + self._id + " online:" + str(self._online) + "->" + str(new_online) + " | private:" + str(self._private) + "->" + str(new_private)
+		status_update = "online:" + str(self._online) + "->" + str(new_online) + " | private:" + str(self._private) + "->" + str(new_private)
 		
 		logging.debug('[Model.update]' + status_update)
 		
@@ -166,29 +176,29 @@ class Model:
 					# model stayed online
 					if new_private:
 						# model went into a private room, so stop recording
-						logging.info('R-\t' + self._id + '\twent private, so stopping recording')
+						self.write_log('went private, so stopping recording', REC_STOP)
 						self._stop_recording()
 					else:
 						# model stayed public (not in private room)
 						if not self._is_still_recording():
 							# Recording died, so clean up recording script and restart recording
-							logging.info('R+\t' + self._id + '\twent recording died, so restarting recording')
+							self.write_log('recording died, so restarting recording', REC_START)
 							self._stop_recording()
 							self._start_recording()					
 				else:
 					# new_online == False, so model went offline
-					logging.info('R-\t' + self._id + '\twent offline while public, so stopping recording')
+					self.write_log('went offline, so stopping recording', REC_STOP)
 					self._stop_recording()
 			else:
 				# model was in a private room
 				if (not new_private) and new_online:
 					# model went public and stayed online
-					logging.info('R+\t' + self._id + '\twent public while online, so starting recording')
+					self.write_log('left private room, so starting recording', REC_START)
 					self._start_recording()
 		else:
 			# model was offline
 			if new_online and (not new_private):
-				logging.info('R+\t' + self._id + ' went online, so starting recording')
+				self.write_log('went online, so starting recording', REC_START)
 				self._start_recording()
 
 		self._update_status(new_online, new_private)

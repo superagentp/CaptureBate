@@ -9,7 +9,7 @@ from ModelsManager import ModelsManager
 if __name__ == '__main__':
 	## Main section
 	# Set logging
-	Logging()
+	init_logging()
 	# Create directories
 	Remove_folder(SCRIPTS_FOLDER)
 	Preconditions(SCRIPTS_FOLDER)

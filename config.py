@@ -30,8 +30,7 @@ def Credentials_file(section, option):
 		sys.exit(1)
 	return value
 
-def Logging():
-
+def init_logging():
 	if DEBUGGING:
 		Logging_level = logging.DEBUG
 	else:
@@ -48,7 +47,7 @@ def Logging():
 	logger.addHandler(logHandler)
 	logger.setLevel(Logging_level)
 	logging.info('*** Starting application: version %s ***' %VERSION)
-
+	
 def Remove_folder(folder):
     if (os.path.exists(folder) == True):
         try:
@@ -117,3 +116,9 @@ VERSION = Config_file('version','VERSION')
 RTMPDUMP = Config_file('advanced','RTMPDUMP')
 # Enable storing html to debug.log file + set logging level
 DEBUGGING = ast.literal_eval(Config_file('debug','DEBUGGING'))
+
+# Constants
+REC_START = 'R+'
+REC_STOP = 'R-'
+MODEL_ADD = 'M+'
+MODEL_DEL = 'M-'
