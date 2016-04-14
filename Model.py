@@ -16,6 +16,7 @@ class Model:
 		self._client = None
 		self._script_process = None
 		self._pid = -1			# Recording script pid, note that the actual rtmpdump pid will be self._pid + 1
+		self._start_time = None	# When recording, this'll store the date & time it started
 		self._flv = None		# The file we're rtmpdump-ing the recording to
 		self._error = False		# self._error == True is something is wrong w/ this model's page
 		
@@ -36,6 +37,7 @@ class Model:
 		if self._online and not self._private:
 			self.write_log(status_string + " and starting recording", REC_START)
 			self._start_recording()
+			self._set_start_time()
 		else:
 			self.write_log(status_string)
 			
@@ -57,6 +59,16 @@ class Model:
 		
 	def set_client(self, client):
 		self._client = client
+		
+	def _get_delta_string(self):
+		now = time.time()
+		now = datetime.datetime.now()
+		delta = now - self._start_time
+		return str(delta)				#  + '(' + str(now) + ' - ' + str(self._start_time) + ')'
+		
+	def _set_start_time(self):
+		self._start_time = time.time()
+		self._start_time = datetime.datetime.now()
 
 	def is_recording(self):
 		return self._pid != -1
@@ -176,30 +188,35 @@ class Model:
 					# model stayed online
 					if new_private:
 						# model went into a private room, so stop recording
-						self.write_log('went private, so stopping recording', REC_STOP)
+						self.write_log('went private, so stopping recording after ' + self._get_delta_string(), REC_STOP)
 						self._stop_recording()
+						self._start_time = None
 					else:
 						# model stayed public (not in private room)
 						if not self._is_still_recording():
 							# Recording died, so clean up recording script and restart recording
-							self.write_log('recording died, so restarting recording', REC_START)
+							self.write_log('recording died, so restarting recording after ' + self._get_delta_string(), REC_START)
 							self._stop_recording()
-							self._start_recording()					
+							self._start_recording()
+							self._set_start_time()
 				else:
 					# new_online == False, so model went offline
-					self.write_log('went offline, so stopping recording', REC_STOP)
+					self.write_log('went offline, so stopping recording after ' + self._get_delta_string(), REC_STOP)
 					self._stop_recording()
+					self._start_time = None
 			else:
 				# model was in a private room
 				if (not new_private) and new_online:
 					# model went public and stayed online
 					self.write_log('left private room, so starting recording', REC_START)
 					self._start_recording()
+					self._set_start_time()
 		else:
 			# model was offline
 			if new_online and (not new_private):
 				self.write_log('went online, so starting recording', REC_START)
 				self._start_recording()
+				self._set_start_time()
 
 		self._update_status(new_online, new_private)
 				
@@ -323,6 +340,7 @@ class Model:
 	def destroy(self):
 		logging.debug('[Model.destroy] Starting cleanup of ' + self._id)
 		if self._pid != -1:
+			self.write_log("Stopping recording after " + self._get_delta_string(), self._id)
 			self._stop_recording()
 		self._online = False
 		self._private = False
