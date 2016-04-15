@@ -62,8 +62,9 @@ class Model:
 		
 	def _get_delta_string(self):
 		delta = datetime.datetime.now() - self._start_time
-		return delta.strftime('%Hh%Mm%Ss')
-#		return str(delta)				#  + '(' + str(now) + ' - ' + str(self._start_time) + ')'
+		delta = datetime.timedelta(seconds = delta.seconds)
+#		return delta.strftime('%Hh%Mm%Ss')
+		return str(delta)				#  + '(' + str(now) + ' - ' + str(self._start_time) + ')'
 		
 	def _set_start_time(self):
 		self._start_time = datetime.datetime.now()
