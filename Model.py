@@ -79,29 +79,31 @@ class Model:
 			if DEBUGGING:
 				logging.debug("[Model.is_online] Redirecting to " + model_url)
 			response = self._client.get(model_url)
+			soup = BeautifulSoup(response.text)
+			if DEBUGGING:
+				Store_Debug(soup, "debug_" + self._id + "_source.log")
+	
+			if response.status_code == 404:
+				# response is "404", so self._id does not exist
+				logging.error("[Model.is_online] " + model_url + " returned 404, so model does not exist")
+				self._error = True
+				return False
+			else:
+				logging.debug("[Model.is_online] " + model_url + " did not return 404, so model exists")
+				
+			offline_div = soup.find('div', class_="offline_tipping")
+			if offline_div == None:
+				# bs4 couldn't find the offline_tipping div, so model is online
+				logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
+				return True
+			else:
+				logging.debug("[Model.is_online] " + self._id + ": offline_div found, so model is offline")
+				return False
 		except Exception, e:
 			logging.debug('Some error during connecting to ' + URL)
 			logging.error(e)
-		soup = BeautifulSoup(response.text)
-		if DEBUGGING:
-			Store_Debug(soup, "debug_" + self._id + "_source.log")
-
-		if response.status_code == 404:
-			# response is "404", so self._id does not exist
-			logging.error("[Model.is_online] " + model_url + " returned 404, so model does not exist")
-			self._error = True
-			return False
-		else:
-			logging.debug("[Model.is_online] " + model_url + " did not return 404, so model exists")
-			
-		offline_div = soup.find('div', class_="offline_tipping")
-		if offline_div == None:
-			# bs4 couldn't find the offline_tipping div, so model is online
-			logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
-			return True
-		else:
-			logging.debug("[Model.is_online] " + self._id + ": offline_div found, so model is offline")
-			return False
+			# Error connecting to model page, so we're not going to change the online status
+			return self._online
 	
 	def is_private(self):
 		if self._online:
