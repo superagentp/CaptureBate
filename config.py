@@ -10,11 +10,11 @@ import ast
 
 def Config_file(section, option):
 	config = SafeConfigParser()
-	config.read('config.conf')
+	config.read('config.conf.txt')
 	try:
 		value = config.get(section, option)
 	except Exception, e:
-		logging.error('Error reading config.conf file!')
+		logging.error('Error reading config.conf.txt file!')
 		logging.error(e)
 		sys.exit(1)
 	return value
