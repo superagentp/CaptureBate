@@ -312,7 +312,7 @@ class Model:
 		
 		# Make the recording read- and writeable to the world
 		logging.debug('[Model._stop_recording] Making recording ' + self._flv + ' world read- and writeable')
-		os.chmod(self._flv, 0666)
+		os.chmod(TEMP_FOLDER + '/' + self._flv, 0666)
 
 		# Moving the recording
 		logging.debug('[Model._stop_recording] Moving recording ' + self._flv + ' to ' + VIDEO_FOLDER)
