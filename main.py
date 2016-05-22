@@ -14,6 +14,7 @@ if __name__ == '__main__':
 	Remove_folder(SCRIPTS_FOLDER)
 	Preconditions(SCRIPTS_FOLDER)
 	Preconditions(VIDEO_FOLDER)
+	Preconditions(TEMP_FOLDER)
 	# Instantiate ModelsManager
 	mm = ModelsManager()
 	

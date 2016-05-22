@@ -16,7 +16,6 @@ class Model:
 		self._client = None
 		self._script_process = None
 		self._pid = -1			# Recording script pid, note that the actual rtmpdump pid will be self._pid + 1
-		self._start_time = None	# When recording, this'll store the date & time it started
 		self._flv = None		# The file we're rtmpdump-ing the recording to
 		self._error = False		# self._error == True is something is wrong w/ this model's page
 		
@@ -37,7 +36,6 @@ class Model:
 		if self._online and not self._private:
 			self.write_log(status_string + " and starting recording", REC_START)
 			self._start_recording()
-			self._set_start_time()
 		else:
 			self.write_log(status_string)
 			
@@ -59,15 +57,6 @@ class Model:
 		
 	def set_client(self, client):
 		self._client = client
-		
-	def _get_delta_string(self):
-		delta = datetime.datetime.now() - self._start_time
-		delta = datetime.timedelta(seconds = delta.seconds)
-#		return delta.strftime('%Hh%Mm%Ss')
-		return str(delta)				#  + '(' + str(now) + ' - ' + str(self._start_time) + ')'
-		
-	def _set_start_time(self):
-		self._start_time = datetime.datetime.now()
 
 	def is_recording(self):
 		return self._pid != -1
@@ -79,31 +68,29 @@ class Model:
 			if DEBUGGING:
 				logging.debug("[Model.is_online] Redirecting to " + model_url)
 			response = self._client.get(model_url)
-			soup = BeautifulSoup(response.text)
-			if DEBUGGING:
-				Store_Debug(soup, "debug_" + self._id + "_source.log")
-	
-			if response.status_code == 404:
-				# response is "404", so self._id does not exist
-				logging.error("[Model.is_online] " + model_url + " returned 404, so model does not exist")
-				self._error = True
-				return False
-			else:
-				logging.debug("[Model.is_online] " + model_url + " did not return 404, so model exists")
-				
-			offline_div = soup.find('div', class_="offline_tipping")
-			if offline_div == None:
-				# bs4 couldn't find the offline_tipping div, so model is online
-				logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
-				return True
-			else:
-				logging.debug("[Model.is_online] " + self._id + ": offline_div found, so model is offline")
-				return False
 		except Exception, e:
 			logging.debug('Some error during connecting to ' + URL)
 			logging.error(e)
-			# Error connecting to model page, so we're not going to change the online status
-			return self._online
+		soup = BeautifulSoup(response.text)
+		if DEBUGGING:
+			Store_Debug(soup, "debug_" + self._id + "_source.log")
+
+		if response.status_code == 404:
+			# response is "404", so self._id does not exist
+			logging.error("[Model.is_online] " + model_url + " returned 404, so model does not exist")
+			self._error = True
+			return False
+		else:
+			logging.debug("[Model.is_online] " + model_url + " did not return 404, so model exists")
+			
+		offline_div = soup.find('div', class_="offline_tipping")
+		if offline_div == None:
+			# bs4 couldn't find the offline_tipping div, so model is online
+			logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
+			return True
+		else:
+			logging.debug("[Model.is_online] " + self._id + ": offline_div found, so model is offline")
+			return False
 	
 	def is_private(self):
 		if self._online:
@@ -189,35 +176,30 @@ class Model:
 					# model stayed online
 					if new_private:
 						# model went into a private room, so stop recording
-						self.write_log('went private, so stopping recording after ' + self._get_delta_string(), REC_STOP)
+						self.write_log('went private, so stopping recording', REC_STOP)
 						self._stop_recording()
-						self._start_time = None
 					else:
 						# model stayed public (not in private room)
 						if not self._is_still_recording():
 							# Recording died, so clean up recording script and restart recording
-							self.write_log('recording died, so restarting recording after ' + self._get_delta_string(), REC_START)
+							self.write_log('recording died, so restarting recording', REC_START)
 							self._stop_recording()
-							self._start_recording()
-							self._set_start_time()
+							self._start_recording()					
 				else:
 					# new_online == False, so model went offline
-					self.write_log('went offline, so stopping recording after ' + self._get_delta_string(), REC_STOP)
+					self.write_log('went offline, so stopping recording', REC_STOP)
 					self._stop_recording()
-					self._start_time = None
 			else:
 				# model was in a private room
 				if (not new_private) and new_online:
 					# model went public and stayed online
 					self.write_log('left private room, so starting recording', REC_START)
 					self._start_recording()
-					self._set_start_time()
 		else:
 			# model was offline
 			if new_online and (not new_private):
 				self.write_log('went online, so starting recording', REC_START)
 				self._start_recording()
-				self._set_start_time()
 
 		self._update_status(new_online, new_private)
 				
@@ -254,7 +236,7 @@ class Model:
 				flinks.write('#!/bin/sh\n')
 				ts = time.time()
 				st = datetime.datetime.fromtimestamp(ts).strftime('%Y.%m.%d_%H.%M')
-				self._flv = VIDEO_FOLDER + '/' + st + '_' + self._id + '_chaturbate.flv'
+				self._flv = st + '_' + self._id + '_chaturbate.flv'
 				form_dict = {
 					"rtmp_bin" : RTMPDUMP,
 					"stream_server": stream_server,
@@ -264,7 +246,7 @@ class Model:
 					"pw_hash": pw,
 					"video_folder": VIDEO_FOLDER,
 					"date_string": st,
-					"flv": self._flv,
+					"flv": TEMP_FOLDER + '/' + self._flv,
 				}
 				rtmpdump_string = '%(rtmp_bin)s --quiet --live --rtmp "rtmp://%(stream_server)s/live-edge" --pageUrl "http://chaturbate.com/%(model_name)s" --conn S:%(username)s --conn S:%(model_name)s --conn S:%(flash_ver)s --conn S:%(pw_hash)s --token "m9z#$dO0qe34Rxe@sMYxx" --playpath "playpath" --flv "%(flv)s"' % form_dict
 				flinks.write(rtmpdump_string)
@@ -328,9 +310,13 @@ class Model:
 		
 		self._script_process.communicate()
 		
-		logging.debug('[Model._stop_recording] Making recording ' + self._flv + ' world read- and writeable')
 		# Make the recording read- and writeable to the world
+		logging.debug('[Model._stop_recording] Making recording ' + self._flv + ' world read- and writeable')
 		os.chmod(self._flv, 0666)
+
+		# Moving the recording
+		logging.debug('[Model._stop_recording] Moving recording ' + self._flv + ' to ' + VIDEO_FOLDER)
+		os.rename(TEMP_FOLDER + '/' + self._flv, VIDEO_FOLDER + '/' + self._flv)
 		
 		self._flv = None
 		self._script_process = None
@@ -341,7 +327,6 @@ class Model:
 	def destroy(self):
 		logging.debug('[Model.destroy] Starting cleanup of ' + self._id)
 		if self._pid != -1:
-			self.write_log("Stopping recording after " + self._get_delta_string(), self._id)
 			self._stop_recording()
 		self._online = False
 		self._private = False

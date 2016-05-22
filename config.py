@@ -10,11 +10,11 @@ import ast
 
 def Config_file(section, option):
 	config = SafeConfigParser()
-	config.read('config.conf.txt')
+	config.read('config.conf')
 	try:
 		value = config.get(section, option)
 	except Exception, e:
-		logging.error('Error reading config.conf.txt file!')
+		logging.error('Error reading config.conf file!')
 		logging.error(e)
 		sys.exit(1)
 	return value
@@ -107,6 +107,7 @@ USER = Credentials_file('credentials','USER')
 PASS = Credentials_file('credentials','PASS')
 OUTPUT_FOLDER = Config_file('folders', 'OUTPUT_FOLDER')
 VIDEO_FOLDER = OUTPUT_FOLDER + Config_file('folders','VIDEO_FOLDER')
+TEMP_FOLDER = VIDEO_FOLDER + '/temp'
 SCRIPTS_FOLDER = OUTPUT_FOLDER + Config_file('folders','SCRIPTS_FOLDER')
 DEBUG_FOLDER = OUTPUT_FOLDER + Config_file('folders','DEBUG_FOLDER')
 LOG_FILE = OUTPUT_FOLDER + Config_file('files','LOG_FILE')
