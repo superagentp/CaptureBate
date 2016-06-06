@@ -310,18 +310,29 @@ class Model:
 		
 		self._script_process.communicate()
 		
-		# Make the recording read- and writeable to the world
-		logging.debug('[Model._stop_recording] Making recording ' + self._flv + ' world read- and writeable')
-		os.chmod(TEMP_FOLDER + '/' + self._flv, 0666)
+		# Check if the recording is at least MINIMAL_RECORDING_SIZE_IN_MB big
+		if (os.path.getsize(TEMP_FOLDER + '/' + self._flv) >> 20) < MINIMAL_RECORDING_SIZE_IN_MB:
+			# recording is smaller than the minimal recording size, so delete file
 
-		# Moving the recording
-		logging.debug('[Model._stop_recording] Moving recording ' + self._flv + ' to ' + VIDEO_FOLDER)
-		os.rename(TEMP_FOLDER + '/' + self._flv, VIDEO_FOLDER + '/' + self._flv)
-		
+			# Deleting the recording, since it is too small
+			logging.debug('[Model._stop_recording] Deleting temp recording ' + self._flv + ' since it is too small')
+			os.remove(TEMP_FOLDER + '/' + self._flv)
+
+		else:
+			# recording is at least the minimal recording size, so move it to the saved folder
+			# Make the recording read- and writeable to the world
+			logging.debug('[Model._stop_recording] Making recording ' + self._flv + ' world read- and writeable')
+			os.chmod(TEMP_FOLDER + '/' + self._flv, 0666)
+
+			# Moving the recording
+			logging.debug('[Model._stop_recording] Moving recording ' + self._flv + ' to ' + VIDEO_FOLDER)
+			os.rename(TEMP_FOLDER + '/' + self._flv, VIDEO_FOLDER + '/' + self._flv)			
+			
+		# Clean up
 		self._flv = None
 		self._script_process = None
 		self._pid = -1
-#		os.kill(self._pid, signal.SIGTERM) # or signal.SIGKILL
+	#		os.kill(self._pid, signal.SIGTERM) # or signal.SIGKILL
 		logging.debug('[Model._stop_recording] Stopped recording: ' + self._id+ ' with pid ' + str(self._pid))
 		
 	def destroy(self):
