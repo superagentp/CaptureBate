@@ -307,6 +307,7 @@ class Model:
 		except Exception, e:
 			logging.debug('[Model._stop_recording] kill ' + str(self._pid + 1) + ' failed')
 			logging.debug(e)
+			return
 		
 		self._script_process.communicate()
 		
