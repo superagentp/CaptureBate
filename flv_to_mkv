@@ -1,0 +1,10 @@
+if [ $# -eq 0 ] ; then
+	for flv_file in *.flv
+	do
+		avconv -i "$flv_file" -c:v libx264 -c:a copy "${flv_file/.flv/.mkv}"
+		rm "$flv_file"
+	done
+else
+	avconv -i "$1" -c:v libx264 -c:a copy "${1/.flv/.mkv}"
+	rm "$1"
+fi
