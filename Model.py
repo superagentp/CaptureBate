@@ -328,7 +328,9 @@ class Model:
 			# Moving the recording
 			logging.debug('[Model._stop_recording] Moving recording ' + self._flv + ' to ' + VIDEO_FOLDER)
 			os.rename(TEMP_FOLDER + '/' + self._flv, VIDEO_FOLDER + '/' + self._flv)
-			subprocess.Popen([VIDEO_FOLDER + '/flv_to_mkv', self._flv])
+			if ("TRUE" == REENCODE):
+				reencoder = VIDEO_FOLDER + '/flv_to_mkv'
+				subprocess.Popen([reencoder, self._flv])
 			
 		# Clean up
 		self._flv = None
