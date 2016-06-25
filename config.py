@@ -116,7 +116,7 @@ DELAY = int(Config_file('delays','DELAY'))
 VERSION = Config_file('version','VERSION')
 RTMPDUMP = Config_file('advanced','RTMPDUMP')
 #REENCODE = Config_file('advanced','REENCODE')
-REENCODE = ast.literal_eval(Config_file('debug','REENCODE'))
+REENCODE = ast.literal_eval(Config_file('advanced','REENCODE'))
 # Enable storing html to debug.log file + set logging level
 DEBUGGING = ast.literal_eval(Config_file('debug','DEBUGGING'))
 MINIMAL_RECORDING_SIZE_IN_MB = int(float(Config_file('advanced','MINIMAL_RECORDING_SIZE_IN_MB')))
