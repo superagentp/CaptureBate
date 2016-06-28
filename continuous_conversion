@@ -1,0 +1,8 @@
+inotifywait -m --format '%f' -e moved_to . | while read new_flv
+do
+	printf "Starting conversion of "
+	printf $new_flv
+	printf "\n"
+	./flv_to_mkv $new_flv
+	printf "Conversion finished\n"
+done
