@@ -220,7 +220,8 @@ class Model:
 
 		for i,line in enumerate(script_list_lines):
 			match = regex.match(line)
-			pw_match = re.search(r"password:\s'(pbkdf2_sha256.*[\\u003D|=])", line)
+#			pw_match = re.search(r"password:\s'(pbkdf2_sha256.*[\\u003D|=])", line)
+			pw_match = re.search(r"password:\s'(.*?.{120,})'", line)
 			if pw_match:
 				logging.debug('[Get_Links] found hashed password: %s' % pw_match.group(1))
 				pw = Password_hash(pw_match.group(1))
