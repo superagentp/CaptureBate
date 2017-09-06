@@ -41,14 +41,15 @@ class ModelsManager:
 					model.destroy()
 					self._models.remove(model)
 			for new_wanted in new_wanted_list:
-				if not new_wanted in self._wanted:
-					# User added a model id to the wanted list
-					logging.debug('[ModelsManager.update_wanted] Adding ' + new_wanted)
-					self._wanted.append(new_wanted)
-					model = Model(new_wanted)
-					logging.info('M+\t' + new_wanted + '\tfound in wanted file, so adding model')
-					model.init()
-					self._models.append(model)
+				if not new_wanted.startswith("#"):
+					if not new_wanted in self._wanted:
+						# User added a model id to the wanted list
+						logging.debug('[ModelsManager.update_wanted] Adding ' + new_wanted)
+						self._wanted.append(new_wanted)
+						model = Model(new_wanted)
+						logging.info('M+\t' + new_wanted + '\tfound in wanted file, so adding model')
+						model.init()
+						self._models.append(model)
 		except IOError, e:
 			logging.info("Error: %s file does not appear to exist." % WANTED_FILE)
 			logging.debug(e)
