@@ -31,11 +31,13 @@ class ModelsManager:
 			with open(WANTED_FILE, 'r') as f:
 					new_wanted_list = [line.strip() for line in f]
 			f.close()
+			
 			temp_list = []
 			for candidate in new_wanted_list:
 				if not candidate.startswith("#"):
 					temp_list.append(candidate)
 			new_wanted_list = temp_list
+			
 			for old_wanted in self._wanted:
 				if not old_wanted in new_wanted_list:
 					# User removed a model id from the wanted list
