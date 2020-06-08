@@ -83,8 +83,15 @@ class Model:
 		else:
 			logging.debug("[Model.is_online] " + model_url + " did not return 404, so model exists")
 			
-		offline_div = soup.find('div', class_="cam-offline")
-		if offline_div == None:
+		offline = False
+		scripts = soup.find_all('script')
+		for script in scripts:
+			text = script.get_text()
+			if "initialRoomDossier" in text:
+				if "offline" in text:
+					offline = True
+
+		if offline:
 			# bs4 couldn't find the offline div, so model is online
 			logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
 			return True
