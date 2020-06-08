@@ -83,9 +83,9 @@ class Model:
 		else:
 			logging.debug("[Model.is_online] " + model_url + " did not return 404, so model exists")
 			
-		offline_div = soup.find('div', class_="offline_tipping")
+		offline_div = soup.find('div', class_="cam-offline")
 		if offline_div == None:
-			# bs4 couldn't find the offline_tipping div, so model is online
+			# bs4 couldn't find the offline div, so model is online
 			logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
 			return True
 		else:
