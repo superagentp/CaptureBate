@@ -83,20 +83,20 @@ class Model:
 		else:
 			logging.debug("[Model.is_online] " + model_url + " did not return 404, so model exists")
 			
-		offline = False
+		online = True
 		scripts = soup.find_all('script')
 		for script in scripts:
 			text = script.get_text()
 			if "initialRoomDossier" in text:
 				if "offline" in text:
-					offline = True
+					online = False
 
-		if offline:
-			# bs4 couldn't find the offline div, so model is online
-			logging.debug("[Model.is_online] " + self._id + ": offline_div not found, so model is online")
+		if online:
+			# bs4 did not find "offline" in initialRoomDossier, so model is online
+			logging.debug("[Model.is_online] " + self._id + ": offline not found, so model is online")
 			return True
 		else:
-			logging.debug("[Model.is_online] " + self._id + ": offline_div found, so model is offline")
+			logging.debug("[Model.is_online] " + self._id + ": offline found, so model is offline")
 			return False
 	
 	def is_private(self):
